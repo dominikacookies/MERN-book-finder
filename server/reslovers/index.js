@@ -4,7 +4,7 @@ const {
   login,
   saveBook,
   deleteBook,
-} = require("./events");
+} = require("./books");
 
 const resolvers = {
   Query: {
