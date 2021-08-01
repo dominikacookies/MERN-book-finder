@@ -10,16 +10,23 @@ const { signToken } = require("../utils/auth");
 
 module.exports = {
   // get a user's information
-  async getSingleUser(_, { userId }) {
-    const foundUser = await User.findOne({ _id: userId });
-    console.log("found user:", foundUser);
+  async getSingleUser(_, { userId }, { user }) {
+    try {
+      if (!user) {
+        throw new AuthenticationError("User must be logged in");
+      }
 
-    if (!foundUser) {
-      return res
-        .status(400)
-        .json({ message: "Cannot find a user with this id!" });
+      const foundUser = await User.findOne({ _id: userId });
+      console.log("found user:", foundUser);
+
+      if (!foundUser) {
+        throw new AuthenticationError("User does not exist");
+      }
+      return foundUser;
+    } catch (error) {
+      console.info(error);
+      throw new ApolloError("Internal server error. Please try again soon");
     }
-    return foundUser;
   },
 
   // create a new user
@@ -81,8 +88,12 @@ module.exports = {
   },
 
   // save a new book for a specific user
-  async saveBook(_, { input }) {
+  async saveBook(_, { input }, { user }) {
     try {
+      if (!user) {
+        throw new AuthenticationError("User must be logged in");
+      }
+
       const { userId, authors, description, title, bookId, image, link } =
         input;
 
@@ -114,10 +125,14 @@ module.exports = {
     }
   },
   // remove a book from `savedBooks`
-  async deleteBook(_, { input }) {
+  async deleteBook(_, { input }, { user }) {
     try {
+      if (!user) {
+        throw new AuthenticationError("User must be logged in");
+      }
+
       const updatedUser = await User.findOneAndUpdate(
-        { _id: input.userId },
+        { _id: user.userId },
         { $pull: { savedBooks: { bookId: input.bookId } } },
         { new: true }
       );
