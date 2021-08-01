@@ -26,7 +26,8 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req }) => {
-    authenticate(req);
+    const user = authenticate(req);
+    return { user };
   },
 });
 
