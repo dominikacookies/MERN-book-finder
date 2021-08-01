@@ -94,11 +94,10 @@ module.exports = {
         throw new AuthenticationError("User must be logged in");
       }
 
-      const { userId, authors, description, title, bookId, image, link } =
-        input;
+      const { authors, description, title, bookId, image, link } = input;
 
       const updatedUser = await User.findOneAndUpdate(
-        { _id: userId },
+        { _id: user._id },
         {
           $addToSet: {
             savedBooks: {
@@ -117,6 +116,8 @@ module.exports = {
       if (!updatedUser) {
         throw new AuthenticationError("User does not exist");
       }
+
+      console.log("updated user", updatedUser);
 
       return updatedUser;
     } catch (err) {
