@@ -25,9 +25,9 @@ app.use(routes);
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  // context: ({ req }) => {
-  //   authenticate(req);
-  // },
+  context: ({ req }) => {
+    authenticate(req);
+  },
 });
 
 db.once("open", () => {
