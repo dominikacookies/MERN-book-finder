@@ -9,7 +9,7 @@ const { User } = require("../models");
 const { signToken } = require("../utils/auth");
 
 module.exports = {
-  // get a single user by either their id or their username
+  // get a user's information
   async getSingleUser(_, { userId }) {
     const foundUser = await User.findOne({ _id: userId });
     console.log("found user:", foundUser);
@@ -21,7 +21,8 @@ module.exports = {
     }
     return foundUser;
   },
-  // create a user, sign a token, and send it back (to client/src/components/SignUpForm.js)
+
+  // create a new user
   async createUser(_, { input }) {
     try {
       const user = await User.create(input);
@@ -46,8 +47,7 @@ module.exports = {
     }
   },
 
-  // login a user, sign a token, and send it back (to client/src/components/LoginForm.js)
-  // {body} is destructured req.body
+  // log a user in
   async login(_, { input }) {
     try {
       const user = await User.findOne({ email: input.email });
@@ -79,8 +79,7 @@ module.exports = {
     }
   },
 
-  // save a book to a user's `savedBooks` field by adding it to the set (to prevent duplicates)
-  // user comes from `req.user` created in the auth middleware function
+  // save a new book for a specific user
   async saveBook(_, { input }) {
     try {
       const { userId, authors, description, title, bookId, image, link } =
