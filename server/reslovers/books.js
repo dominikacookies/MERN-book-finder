@@ -1,86 +1,133 @@
 // import user model
+const {
+  AuthenticationError,
+  ApolloError,
+  UserInputError,
+} = require("apollo-server");
 const { User } = require("../models");
 // import sign token function from auth
 const { signToken } = require("../utils/auth");
 
 module.exports = {
   // get a single user by either their id or their username
-  async getSingleUser({ user = null, params }, res) {
-    const foundUser = await User.findOne({
-      $or: [
-        { _id: user ? user._id : params.id },
-        { username: params.username },
-      ],
-    });
+  async getSingleUser(_, { userId }) {
+    const foundUser = await User.findOne({ _id: userId });
+    console.log("found user:", foundUser);
 
     if (!foundUser) {
       return res
         .status(400)
         .json({ message: "Cannot find a user with this id!" });
     }
-    console.log("found user:", foundUser);
-    res.json(foundUser);
+    return foundUser;
   },
   // create a user, sign a token, and send it back (to client/src/components/SignUpForm.js)
-  async createUser({ body }, res) {
-    const user = await User.create(body);
+  async createUser(_, { input }) {
+    try {
+      const user = await User.create(input);
 
-    if (!user) {
-      return res.status(400).json({ message: "Something is wrong!" });
+      if (!user) {
+        throw new UserInputError(
+          "Could not create user. Ensure email and username are unique"
+        );
+      }
+
+      const auth = {
+        user,
+        token: [],
+      };
+
+      return auth;
+      // const token = signToken(user);
+      // res.json({ token, user });
+    } catch (error) {
+      console.info(error);
+      throw new ApolloError("Internal server error. Please try again soon");
     }
-    const token = signToken(user);
-    console.log("created user:", user);
-    res.json({ token, user });
   },
+
   // login a user, sign a token, and send it back (to client/src/components/LoginForm.js)
   // {body} is destructured req.body
-  async login({ body }, res) {
-    const user = await User.findOne({
-      $or: [{ username: body.username }, { email: body.email }],
-    });
-    if (!user) {
-      return res.status(400).json({ message: "Can't find this user" });
-    }
+  async login(_, { input }) {
+    try {
+      const user = await User.findOne({ _id: input.userId });
 
-    const correctPw = await user.isCorrectPassword(body.password);
+      if (!user) {
+        throw new AuthenticationError("User does not exist");
+      }
 
-    if (!correctPw) {
-      return res.status(400).json({ message: "Wrong password!" });
+      const correctPw = await user.isCorrectPassword(input.password);
+
+      if (!correctPw) {
+        return res.status(400).json({ message: "Wrong password!" });
+      }
+
+      const token = signToken(user);
+      console.log("logged in:", user, token);
+
+      const auth = {
+        user,
+        token: "",
+      };
+
+      return auth;
+    } catch (error) {
+      console.info(error);
+      throw new ApolloError("Internal server error. Please try again soon");
     }
-    const token = signToken(user);
-    console.log("logged in:", user, token);
-    res.json({ token, user });
   },
+
   // save a book to a user's `savedBooks` field by adding it to the set (to prevent duplicates)
   // user comes from `req.user` created in the auth middleware function
-  async saveBook({ user, body }, res) {
-    console.log(user);
+  async saveBook(_, { input }) {
     try {
+      const { userId, authors, description, title, bookId, image, link } =
+        input;
+
       const updatedUser = await User.findOneAndUpdate(
-        { _id: user._id },
-        { $addToSet: { savedBooks: body } },
+        { _id: userId },
+        {
+          $addToSet: {
+            savedBooks: {
+              authors,
+              description,
+              title,
+              bookId,
+              image,
+              link,
+            },
+          },
+        },
         { new: true, runValidators: true }
       );
-      console.log("save book", updatedUser);
-      return res.json(updatedUser);
+
+      if (!updatedUser) {
+        throw new AuthenticationError("User does not exist");
+      }
+
+      return updatedUser;
     } catch (err) {
-      console.log(err);
-      return res.status(400).json(err);
+      console.info(error);
+      throw new ApolloError("Internal server error. Please try again soon");
     }
   },
   // remove a book from `savedBooks`
-  async deleteBook({ user, params }, res) {
-    const updatedUser = await User.findOneAndUpdate(
-      { _id: user._id },
-      { $pull: { savedBooks: { bookId: params.bookId } } },
-      { new: true }
-    );
-    if (!updatedUser) {
-      return res
-        .status(404)
-        .json({ message: "Couldn't find user with this id!" });
+  async deleteBook(_, { input }) {
+    try {
+      const updatedUser = await User.findOneAndUpdate(
+        { _id: input.userId },
+        { $pull: { savedBooks: { bookId: input.bookId } } },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        throw new AuthenticationError("User does not exist");
+      }
+
+      return updatedUser;
+    } catch (error) {
+      console.info(error);
+      throw new ApolloError("Internal server error. Please try again soon");
     }
-    console.log("deleted book", updatedUser);
-    return res.json(updatedUser);
   },
 };
