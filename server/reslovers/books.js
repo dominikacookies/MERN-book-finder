@@ -32,14 +32,14 @@ module.exports = {
         );
       }
 
+      const token = signToken(user);
+
       const auth = {
         user,
-        token: [],
+        token,
       };
 
       return auth;
-      // const token = signToken(user);
-      // res.json({ token, user });
     } catch (error) {
       console.info(error);
       throw new ApolloError("Internal server error. Please try again soon");
@@ -50,7 +50,9 @@ module.exports = {
   // {body} is destructured req.body
   async login(_, { input }) {
     try {
-      const user = await User.findOne({ _id: input.userId });
+      const user = await User.findOne({ email: input.email });
+
+      console.log(user);
 
       if (!user) {
         throw new AuthenticationError("User does not exist");
@@ -67,7 +69,7 @@ module.exports = {
 
       const auth = {
         user,
-        token: "",
+        token,
       };
 
       return auth;
