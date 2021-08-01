@@ -52,7 +52,7 @@ module.exports = {
     try {
       const user = await User.findOne({ email: input.email });
 
-      console.log(user);
+      console.log("this is the found user", user);
 
       if (!user) {
         throw new AuthenticationError("User does not exist");
@@ -65,12 +65,13 @@ module.exports = {
       }
 
       const token = signToken(user);
-      console.log("logged in:", user, token);
 
       const auth = {
         user,
         token,
       };
+
+      console.log("logged in:", auth);
 
       return auth;
     } catch (error) {
