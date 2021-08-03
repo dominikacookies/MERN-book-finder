@@ -5,21 +5,23 @@ const authenticate = (req) => {
     const secret = "mysecretsshhhhh";
     const expiration = "2h";
 
-    console.log(req.headers);
-
     if (!req.headers.authorization) {
       console.log("no headers");
-      return;
+      return req;
     }
 
     let token = req.headers.authorization;
     token = token.split(" ").pop().trim();
-    console.log(token);
+    console.log("this is the extracted token", token);
 
-    // verify token and get user data out of it
-    const { data: user } = jwt.verify(token, secret, { maxAge: expiration });
-    console.log("this is the user from auth token", user);
-    return user;
+    try {
+      // verify token and get user data out of it
+      const { data: user } = jwt.verify(token, secret, { maxAge: expiration });
+      return user;
+    } catch {
+      console.log("invalid token");
+      throw AuthenticationError("Invalid token");
+    }
   } catch {
     console.info(error);
     throw new ApolloError("Internal server error. Please try again soon");
