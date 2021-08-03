@@ -59,7 +59,6 @@ const SearchBooks = () => {
         window.replace("./login");
       }
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-      console.log(savedBookIds);
     },
   });
 
