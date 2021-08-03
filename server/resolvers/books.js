@@ -117,11 +117,9 @@ module.exports = {
         throw new AuthenticationError("User does not exist");
       }
 
-      console.log("updated user", updatedUser);
-
       return updatedUser;
     } catch (err) {
-      console.info(error);
+      console.info(err);
       throw new ApolloError("Internal server error. Please try again soon");
     }
   },
