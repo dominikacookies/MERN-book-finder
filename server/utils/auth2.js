@@ -16,8 +16,9 @@ const authenticate = (req) => {
 
     try {
       // verify token and get user data out of it
-      const { data: user } = jwt.verify(token, secret, { maxAge: expiration });
-      return user;
+      const data = jwt.verify(token, secret, { maxAge: expiration });
+      console.log("this is the user I found", data);
+      return data;
     } catch {
       console.log("invalid token");
       throw AuthenticationError("Invalid token");
