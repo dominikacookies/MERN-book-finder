@@ -1,39 +1,32 @@
 const jwt = require("jsonwebtoken");
 
-// set token secret and expiration date
-const secret = "mysecretsshhhhh";
-const expiration = "2h";
+const authenticate = (req) => {
+  try {
+    const secret = "mysecretsshhhhh";
+    const expiration = "2h";
 
-module.exports = {
-  // function for our authenticated routes
-  authMiddleware: function (req, res, next) {
-    // allows token to be sent via  req.query or headers
-    let token = req.query.token || req.headers.authorization;
-
-    // ["Bearer", "<tokenvalue>"]
-    if (req.headers.authorization) {
-      token = token.split(" ").pop().trim();
+    if (!req.headers.authorization) {
+      console.log("no headers");
+      return req;
     }
 
-    if (!token) {
-      return res.status(400).json({ message: "You have no token!" });
-    }
+    let token = req.headers.authorization;
+    token = token.split(" ").pop().trim();
+    console.log("this is the extracted token", token);
 
-    // verify token and get user data out of it
     try {
-      const { data } = jwt.verify(token, secret, { maxAge: expiration });
-      req.user = data;
+      // verify token and get user data out of it
+      const data = jwt.verify(token, secret, { maxAge: expiration });
+      console.log("this is the user I found", data);
+      return data;
     } catch {
-      console.log("Invalid token");
-      return res.status(400).json({ message: "invalid token!" });
+      console.log("invalid token");
+      throw AuthenticationError("Invalid token");
     }
-
-    // send to next endpoint
-    next();
-  },
-  signToken: function ({ username, email, _id }) {
-    const payload = { username, email, _id };
-
-    return jwt.sign(payload, secret, { expiresIn: expiration });
-  },
+  } catch {
+    console.info(error);
+    throw new ApolloError("Internal server error. Please try again soon");
+  }
 };
+
+module.exports = authenticate;
