@@ -8,7 +8,6 @@ import {
   Button,
 } from "react-bootstrap";
 
-import { deleteBook } from "../utils/API";
 import Auth from "../utils/auth";
 import { removeBookId } from "../utils/localStorage";
 
