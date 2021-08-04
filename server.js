@@ -4,7 +4,9 @@ const typeDefs = require("./schemas");
 const resolvers = require("./resolvers");
 
 const db = require("./config/connection");
-const authenticate = require("./utils/auth");
+const { authenticate } = require("./utils/auth");
+
+const PORT = process.env.PORT || 4000;
 
 const server = new ApolloServer({
   typeDefs,
@@ -16,7 +18,7 @@ const server = new ApolloServer({
 });
 
 db.once("open", () => {
-  server.listen().then(({ url }) => {
+  server.listen({ port: PORT }).then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
   });
 });
