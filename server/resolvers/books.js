@@ -10,13 +10,14 @@ const { signToken } = require("../utils/auth");
 
 module.exports = {
   // get a user's information
-  async getSingleUser(_, { userId }, { user }) {
+  async getSingleUser(_, a, { user }) {
     try {
       if (!user) {
+        console.info("no user");
         throw new AuthenticationError("User must be logged in");
       }
 
-      const foundUser = await User.findOne({ _id: userId });
+      const foundUser = await User.findOne({ _id: user._id });
       console.log("found user:", foundUser);
 
       if (!foundUser) {
@@ -124,15 +125,17 @@ module.exports = {
     }
   },
   // remove a book from `savedBooks`
-  async deleteBook(_, { input }, { user }) {
+  async deleteBook(_, { bookId }, { user }) {
     try {
       if (!user) {
         throw new AuthenticationError("User must be logged in");
       }
 
+      const id = user._id;
+
       const updatedUser = await User.findOneAndUpdate(
-        { _id: user.userId },
-        { $pull: { savedBooks: { bookId: input.bookId } } },
+        { _id: id },
+        { $pull: { savedBooks: { bookId: bookId } } },
         { new: true }
       );
 
