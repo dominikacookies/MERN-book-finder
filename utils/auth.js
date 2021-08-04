@@ -1,10 +1,10 @@
 const jwt = require("jsonwebtoken");
 
+const secret = "mysecretsshhhhh";
+const expiration = "2h";
+
 const authenticate = (req) => {
   try {
-    const secret = "mysecretsshhhhh";
-    const expiration = "2h";
-
     if (!req.headers.authorization) {
       console.log("no headers");
       return req;
@@ -18,7 +18,7 @@ const authenticate = (req) => {
       // verify token and get user data out of it
       const data = jwt.verify(token, secret, { maxAge: expiration });
       console.log("this is the user I found", data);
-      return data;
+      return data.data;
     } catch {
       console.log("invalid token");
       throw AuthenticationError("Invalid token");
@@ -29,4 +29,13 @@ const authenticate = (req) => {
   }
 };
 
-module.exports = authenticate;
+const signToken = ({ username, email, _id }) => {
+  const payload = { username, email, _id };
+
+  return jwt.sign({ data: payload }, secret, { expiresIn: expiration });
+};
+
+module.exports = {
+  authenticate,
+  signToken,
+};
