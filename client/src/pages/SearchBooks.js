@@ -99,8 +99,6 @@ const SearchBooks = () => {
     // find the book in `searchedBooks` state by the matching id
     const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
 
-    console.log("this is the book to save", bookToSave);
-
     if (!token) {
       return false;
     }
