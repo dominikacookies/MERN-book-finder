@@ -18,7 +18,6 @@ module.exports = {
       }
 
       const foundUser = await User.findOne({ _id: user._id });
-      console.log("found user:", foundUser);
 
       if (!foundUser) {
         throw new AuthenticationError("User does not exist");
@@ -60,8 +59,6 @@ module.exports = {
     try {
       const user = await User.findOne({ email: input.email });
 
-      console.log("this is the found user", user);
-
       if (!user) {
         throw new AuthenticationError("User does not exist");
       }
@@ -78,8 +75,6 @@ module.exports = {
         user,
         token,
       };
-
-      console.log("logged in:", auth);
 
       return auth;
     } catch (error) {

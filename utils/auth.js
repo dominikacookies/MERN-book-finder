@@ -6,21 +6,17 @@ const expiration = "2h";
 const authenticate = (req) => {
   try {
     if (!req.headers.authorization) {
-      console.log("no headers");
       return req;
     }
 
     let token = req.headers.authorization;
     token = token.split(" ").pop().trim();
-    console.log("this is the extracted token", token);
 
     try {
       // verify token and get user data out of it
       const data = jwt.verify(token, secret, { maxAge: expiration });
-      console.log("this is the user I found", data);
       return data.data;
     } catch {
-      console.log("invalid token");
       throw AuthenticationError("Invalid token");
     }
   } catch {
